@@ -1,0 +1,6 @@
+packages:
+  - git: "https://github.com/dbt-labs/dbt-utils.git"
+    revision: 0.8.6
+  - git: "https://{{ env_var('DBT_DEPLOY_TOKEN_USER','gitlab+deploy-token-1824865') }}:{{ env_var('DBT_DEPLOY_TOKEN_PWD','vpYpJr9cYJ8i9B2eeoLT') }}@gitlab.com/smithandnephew/it/snn-data-analytics/snn-data-analytics-elt/dbt_common_util.git"
+    subdirectory: dbt_common_util
+    revision: uat

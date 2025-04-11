@@ -1,0 +1,63 @@
+snowflake_db:
+  target: dev
+  outputs:
+    snp:
+      type: snowflake
+      account: snn-awsus_nonprod.privatelink
+      user: Manoj.Behera@smith-nephew.com
+      role: APL_UDP_SNNSF_DEV_DA_UDP_ADMIN_ROLE
+      # SSO config
+      authenticator: externalbrowser
+
+      database: DA_UDP_SNP_DEV
+      warehouse: DA_UDP_PR0269_ELT_WH
+      schema: dbt_manoj
+      threads: 1
+      client_session_keep_alive: False
+  
+
+      # optional
+      connect_retries: 0 # default 0
+      connect_timeout: 10 # default: 10
+      retry_on_database_errors: False # default: false 
+      retry_all: False  # default: false 
+    dev:
+      type: snowflake
+      account: snn-awsus_nonprod.privatelink
+      user: harish.acharya@smith-nephew.com
+      role: APL_UDP_SNNSF_DEV_DA_UDP_ADMIN_ROLE
+      # SSO config
+      authenticator: externalbrowser
+
+      database: DA_UDP_DEV
+      warehouse: DA_UDP_PR0269_ELT_WH
+      schema: dbt_manoj
+      threads: 1
+      client_session_keep_alive: False
+  
+
+      # optional
+      connect_retries: 0 # default 0
+      connect_timeout: 10 # default: 10
+      retry_on_database_errors: False # default: false 
+      retry_all: False  # default: false      
+    uat:
+      type: snowflake
+      account: snn-awsus_prod.privatelink
+      user: manoj.behera@smith-nephew.com
+      role: APL_UDP_SNNSF_UAT_DA_UDP_ADMIN_ROLE
+
+      # SSO config
+      authenticator: externalbrowser
+
+      database: DA_UDP_UAT
+      warehouse: DA_UDP_PR0269_ELT_UAT_WH
+      schema: dbt_manoj
+      threads: 1
+      client_session_keep_alive: False
+
+      # optional
+      connect_retries: 0 # default 0
+      connect_timeout: 10 # default: 10
+      retry_on_database_errors: False # default: false 
+      retry_all: False  # default: false 

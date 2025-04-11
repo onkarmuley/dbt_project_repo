@@ -1,0 +1,89 @@
+# This file is a template, and might need editing before it works on your project.
+# This is a sample GitLab CI/CD configuration file that should run without any modifications.
+# It demonstrates a basic 3 stage CI/CD pipeline. Instead of real tests or scripts,
+# it uses echo commands to simulate the pipeline execution.
+#
+# A pipeline is composed of independent jobs that run scripts, grouped into stages.
+# Stages run in sequential order, but jobs within stages run in parallel.
+#
+# For more information, see: https://docs.gitlab.com/ee/ci/yaml/index.html#stages
+#
+# You can copy and paste this template into a new `.gitlab-ci.yml` file.
+# You should not add this template to an existing `.gitlab-ci.yml` file by using the `include:` keyword.
+#
+# To contribute improvements to CI/CD templates, please follow the Development guide at:
+# https://docs.gitlab.com/ee/development/cicd/templates.html
+# This specific template is located at:
+# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
+image: python:latest
+stages:          # List of stages for jobs, and their order of execution
+  - build
+  - test
+  - deploy
+
+.dbt_run: &dbt_jobs
+  image: python:3.12-slim-bookworm
+  before_script:
+    - apt-get update
+    - apt-get dist-upgrade -y
+    - apt-get install -y --no-install-recommends git make ca-certificates libpq-dev libicu-dev pkg-config gcc build-essential
+    - pip install dbt-snowflake==1.6.8
+    - export CI_PROFILE_TARGET="--profiles-dir . --target ${TARGET_NAME}"
+    - echo $CI_PROFILE_TARGET
+
+.deploy:
+  <<: *dbt_jobs
+  script:
+    - dbt deps $CI_PROFILE_TARGET
+    
+build-job:       # This job runs in the build stage, which runs first.
+  stage: build
+  script:
+    - echo "Compiling the code..."
+    - echo "Compile complete."
+    - dbt deps $CI_PROFILE_TARGET
+    
+  extends: .deploy
+  variables:
+    TARGET_NAME: snowflake
+  only:
+    - merge_requests
+
+
+lint-test-job:
+  image: python:3.12-slim-bookworm
+  before_script:
+    - apt-get update
+    - apt-get dist-upgrade -y
+    - apt-get install -y --no-install-recommends git make ca-certificates libpq-dev libicu-dev pkg-config gcc build-essential
+    - pip install dbt-snowflake==1.6.8
+    - export CI_PROFILE_TARGET="--profiles-dir . --target snowflake"
+    - echo $CI_PROFILE_TARGET
+
+  stage: test
+  extends: .deploy
+  script:
+    
+    #- target_branch="test_lint_k_dev"
+    #- echo "Target branch is $target_branch"
+    - echo "Target branch is $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+    - echo "Ref branch is $CI_COMMIT_REF_NAME"
+    - echo "Checking for new SQL files in this MR"
+    - git fetch origin
+    #- target_commit=$(git rev-parse "origin/$target_branch")
+    - target_commit=$(git rev-parse "origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME")
+    - current_commit=$(git rev-parse "origin/$CI_COMMIT_REF_NAME")
+    - echo "$target_commit"
+    - echo "$current_commit"
+    - new_sql_files=$(git diff --name-only $target_commit..$current_commit | grep '\.sql$')
+    - echo "New SQL files in this MR:"
+    - echo "$new_sql_files"
+    - dbt deps $CI_PROFILE_TARGET
+    - pip install sqlfluff sqlfluff-templater-dbt
+    - echo "Linting changed SQL files..."
+    - sqlfluff lint --config .sqlfluff $new_sql_files --dialect snowflake -r PRS
+    - echo "No lint issues found."
+
+
+  only:
+    - merge_requests

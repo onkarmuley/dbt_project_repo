@@ -1,0 +1,8 @@
+packages:
+  - git: https://github.com/dbt-labs/dbt-utils.git
+    revision: ac072a3c4b78d43a1c013e7de8b8fa6e290b544e
+  - git: https://{{ env_var('DBT_DEPLOY_TOKEN_USER','gitlab+deploy-token-1824865')
+      }}:{{ env_var('DBT_DEPLOY_TOKEN_PWD','vpYpJr9cYJ8i9B2eeoLT') }}@gitlab.com/smithandnephew/it/snn-data-analytics/snn-data-analytics-elt/dbt_common_util.git
+    revision: 1d3a6ddaf29023d14ac6232e909f99ed14542391
+    subdirectory: dbt_common_util
+sha1_hash: 52ba66bbd198d202460bcfcbda2b01949c02a3b0
